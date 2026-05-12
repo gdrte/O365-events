@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-consumer
+  labels:
+    app: o365-consumer
+    {{- include "o365-events.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.consumer.replicaCount }}
+  selector:
+    matchLabels:
+      app: o365-consumer
+  template:
+    metadata:
+      labels:
+        app: o365-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: {{ include "o365-events.consumerImage" . }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            - name: KAFKA_BROKER
+              value: {{ .Values.kafka.broker | quote }}
+            - name: KAFKA_GROUP
+              value: {{ .Values.consumer.group | quote }}
+          resources:
+            {{- toYaml .Values.consumer.resources | nindent 12 }}
+      restartPolicy: Always

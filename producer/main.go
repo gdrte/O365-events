@@ -1,6 +1,11 @@
 package main
 
+import "os"
+
 func main() {
-	// Uncomment to run the O365 Kafka producer:
-	runO365Producer("fedora:9092", 0, 0) // 0 = run forever
+	broker := os.Getenv("KAFKA_BROKER")
+	if broker == "" {
+		broker = "fedora:9092"
+	}
+	runO365Producer(broker, 0, 0)
 }

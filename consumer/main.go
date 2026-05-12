@@ -69,8 +69,16 @@ func consume(ctx context.Context, reader *kafka.Reader, topic string) {
 }
 
 func main() {
-	broker := flag.String("broker", "fedora:9092", "Kafka broker address")
-	group := flag.String("group", "o365-consumer-group", "Consumer group ID")
+	defaultBroker := "fedora:9092"
+	if env := os.Getenv("KAFKA_BROKER"); env != "" {
+		defaultBroker = env
+	}
+	defaultGroup := "o365-consumer-group"
+	if env := os.Getenv("KAFKA_GROUP"); env != "" {
+		defaultGroup = env
+	}
+	broker := flag.String("broker", defaultBroker, "Kafka broker address")
+	group := flag.String("group", defaultGroup, "Consumer group ID")
 	flag.Parse()
 
 	topics := []string{"topic-1", "topic-2", "topic-3"}

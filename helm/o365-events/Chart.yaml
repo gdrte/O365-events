@@ -1,0 +1,6 @@
+apiVersion: v2
+name: o365-events
+description: O365 event producer and consumer for Kafka
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

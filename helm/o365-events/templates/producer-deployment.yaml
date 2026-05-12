@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-producer
+  labels:
+    app: o365-producer
+    {{- include "o365-events.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.producer.replicaCount }}
+  selector:
+    matchLabels:
+      app: o365-producer
+  template:
+    metadata:
+      labels:
+        app: o365-producer
+    spec:
+      containers:
+        - name: producer
+          image: {{ include "o365-events.producerImage" . }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            - name: KAFKA_BROKER
+              value: {{ .Values.kafka.broker | quote }}
+          resources:
+            {{- toYaml .Values.producer.resources | nindent 12 }}
+      restartPolicy: Always

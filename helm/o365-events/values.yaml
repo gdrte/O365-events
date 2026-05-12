@@ -1,0 +1,29 @@
+imageRegistry: "192.168.0.103:5000"
+imageTag: "latest"
+imagePullPolicy: IfNotPresent
+
+kafka:
+  broker: "192.168.0.103:9092"
+
+producer:
+  replicaCount: 2
+  image: o365-producer
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi
+
+consumer:
+  replicaCount: 2
+  image: o365-consumer
+  group: o365-consumer-group
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi
