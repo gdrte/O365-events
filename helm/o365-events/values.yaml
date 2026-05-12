@@ -5,6 +5,9 @@ imagePullPolicy: IfNotPresent
 kafka:
   broker: "192.168.0.103:9092"
 
+opensearch:
+  url: "http://opensearch-cluster-master.opensearch.svc.cluster.local:9200"
+
 producer:
   replicaCount: 2
   image: o365-producer

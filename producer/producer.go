@@ -1,4 +1,4 @@
-package main
+package producer
 
 import (
 	"context"
@@ -62,7 +62,7 @@ func marshal(eventType string, v interface{}) (string, []byte) {
 	return eventType, b
 }
 
-func runO365Producer(broker string, intervalMs int, count int) {
+func RunO365Producer(broker string, intervalMs int, count int) {
 	topics := []string{"topic-1", "topic-2", "topic-3"}
 
 	writers := make(map[string]*kafka.Writer, len(topics))

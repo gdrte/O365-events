@@ -24,6 +24,8 @@ spec:
               value: {{ .Values.kafka.broker | quote }}
             - name: KAFKA_GROUP
               value: {{ .Values.consumer.group | quote }}
+            - name: OPENSEARCH_URL
+              value: {{ .Values.opensearch.url | quote }}
           resources:
             {{- toYaml .Values.consumer.resources | nindent 12 }}
       restartPolicy: Always

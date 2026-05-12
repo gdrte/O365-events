@@ -1,4 +1,4 @@
-module coding.interview
+module O365_Events_Orchestrator
 
 go 1.26.2
 

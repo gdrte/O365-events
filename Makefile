@@ -3,19 +3,19 @@ TAG         := latest
 FEDORA_HOST := 192.168.0.103
 KUBECONFIG  := /tmp/k3s-kubeconfig.yaml
 
-.PHONY: kubeconfig build load push deploy undeploy logs-producer logs-consumer
+.PHONY: kubeconfig build load push deploy undeploy logs-producer logs-consumer opensearch-deploy opensearch-status
 
 kubeconfig:
 	ssh $(FEDORA_HOST) "sudo cat /etc/rancher/k3s/k3s.yaml" | sed 's/127.0.0.1/$(FEDORA_HOST)/g' > $(KUBECONFIG)
 
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o producer/producer ./producer
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o consumer/consumer ./consumer
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/producer ./cmd/producer/...
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/consumer/ ./cmd/consumer/...
 	docker buildx build --platform linux/amd64 \
-		-f producer/Dockerfile \
+		-f producer.Dockerfile \
 		-t $(REGISTRY)/o365-producer:$(TAG) --load .
 	docker buildx build --platform linux/amd64 \
-		-f consumer/Dockerfile \
+		-f consumer.Dockerfile \
 		-t $(REGISTRY)/o365-consumer:$(TAG) --load .
 
 load: build
@@ -41,3 +41,12 @@ logs-producer:
 
 logs-consumer:
 	KUBECONFIG=$(KUBECONFIG) kubectl logs -l app=o365-consumer -f
+
+opensearch-deploy:
+	KUBECONFIG=$(KUBECONFIG) helm upgrade --install opensearch opensearch/opensearch \
+		-f helm/opensearch-values.yaml --namespace opensearch --create-namespace
+	KUBECONFIG=$(KUBECONFIG) helm upgrade --install opensearch-dashboards opensearch/opensearch-dashboards \
+		-f helm/opensearch-dashboards-values.yaml --namespace opensearch
+
+opensearch-status:
+	KUBECONFIG=$(KUBECONFIG) kubectl get pods,svc -n opensearch

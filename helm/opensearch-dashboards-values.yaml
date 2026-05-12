@@ -1,0 +1,18 @@
+image:
+  tag: "2.19.1"
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
+
+opensearchHosts: "http://opensearch-cluster-master:9200"
+
+config:
+  opensearch_dashboards.yml: |
+    opensearch.hosts: [http://opensearch-cluster-master:9200]
+    opensearch.ssl.verificationMode: none
+    server.host: "0.0.0.0"

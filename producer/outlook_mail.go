@@ -1,4 +1,4 @@
-package main
+package producer
 
 import (
 	"fmt"
@@ -79,23 +79,23 @@ func genOutlookMail() (string, OutlookMailEvent) {
 	}
 
 	e := OutlookMailEvent{
-		CreationTime:      time.Now().UTC(),
-		Id:                newGUID(),
-		Operation:         op.op,
-		OrganizationId:    tenantID,
-		RecordType:        op.recordType,
-		ResultStatus:      pick([]string{"Succeeded", "Succeeded", "Succeeded", "Failed"}),
-		UserKey:           newGUID(),
-		Workload:          "Exchange",
-		UserId:            user,
-		ClientIPAddress:   pick(ipAddresses),
-		ClientInfoString:  pick(clientApps),
-		ExternalAccess:    rand.Intn(10) < 2,
-		LogonUserSid:      fmt.Sprintf("S-1-5-21-%d-%d-%d", rand.Int31(), rand.Int31(), rand.Int31()),
-		MailboxGuid:       newGUID(),
-		MailboxOwnerUPN:   user,
-		OrganizationName:  "contoso.com",
-		Item:              item,
+		CreationTime:     time.Now().UTC(),
+		Id:               newGUID(),
+		Operation:        op.op,
+		OrganizationId:   tenantID,
+		RecordType:       op.recordType,
+		ResultStatus:     pick([]string{"Succeeded", "Succeeded", "Succeeded", "Failed"}),
+		UserKey:          newGUID(),
+		Workload:         "Exchange",
+		UserId:           user,
+		ClientIPAddress:  pick(ipAddresses),
+		ClientInfoString: pick(clientApps),
+		ExternalAccess:   rand.Intn(10) < 2,
+		LogonUserSid:     fmt.Sprintf("S-1-5-21-%d-%d-%d", rand.Int31(), rand.Int31(), rand.Int31()),
+		MailboxGuid:      newGUID(),
+		MailboxOwnerUPN:  user,
+		OrganizationName: "contoso.com",
+		Item:             item,
 	}
 
 	if op.op == "Send" || op.op == "SendAs" || op.op == "SendOnBehalf" {
