@@ -16,6 +16,34 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
+// scenarioEventTypes is the set of event types routed to topic-false-positive.
+var scenarioEventTypes = map[string]bool{
+	"ImpossibleTravel":              true,
+	"ExternalForwardingRuleCreated": true,
+	"BulkSharePointDownload":        true,
+	"OAuthAppConsentGrant":          true,
+	"MFADisabledForUser":            true,
+	"PasswordSpray":                 true,
+	"GuestAccountAdded":             true,
+	"SuspiciousInboxRule":           true,
+	"SuspiciousSignIn":              true,
+	"MassMailboxDeletion":           true,
+	"RiskyUserDetected":             true,
+	"AnonymousIPSignIn":             true,
+	"MailboxPermissionGranted":      true,
+	"AdminConsentGranted":           true,
+	"DataExfiltrationAlert":         true,
+}
+
+func headerValue(headers []kafka.Header, key string) string {
+	for _, h := range headers {
+		if h.Key == key {
+			return string(h.Value)
+		}
+	}
+	return ""
+}
+
 type O365Event struct {
 	ID           string    `json:"id"`
 	CreationTime time.Time `json:"creationTime"`
@@ -84,7 +112,7 @@ func newReader(broker, topic, group string) *kafka.Reader {
 	})
 }
 
-func consume(ctx context.Context, reader *kafka.Reader, topic string, ix *indexer) {
+func consume(ctx context.Context, reader *kafka.Reader, topic string, ix *indexer, fpWriter *kafka.Writer) {
 	for {
 		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
@@ -95,16 +123,18 @@ func consume(ctx context.Context, reader *kafka.Reader, topic string, ix *indexe
 			continue
 		}
 
+		eventType := headerValue(msg.Headers, "event-type")
+
 		var event O365Event
 		if err := json.Unmarshal(msg.Value, &event); err != nil {
 			log.Printf("[%s] parse error: %v | raw: %s", topic, err, msg.Value)
 			continue
 		}
 
-		fmt.Printf("[%-10s] offset=%-6d  %-20s  %-28s  %-12s  %-10s  %s\n",
+		fmt.Printf("[%-10s] offset=%-6d  %-30s  %-28s  %-12s  %-10s  %s\n",
 			topic,
 			msg.Offset,
-			event.EventType,
+			eventType,
 			event.UserID,
 			event.Location,
 			event.ResultStatus,
@@ -112,6 +142,20 @@ func consume(ctx context.Context, reader *kafka.Reader, topic string, ix *indexe
 		)
 
 		go ix.put(event, topic, msg.Offset)
+
+		if scenarioEventTypes[eventType] {
+			fwd := kafka.Message{
+				Key:     msg.Key,
+				Value:   msg.Value,
+				Headers: msg.Headers,
+				Time:    msg.Time,
+			}
+			if err := fpWriter.WriteMessages(ctx, fwd); err != nil {
+				log.Printf("[%s] forward to topic-false-positive error: %v", topic, err)
+			} else {
+				log.Printf("→ [topic-false-positive] %s (from %s offset %d)", eventType, topic, msg.Offset)
+			}
+		}
 	}
 }
 
@@ -140,13 +184,20 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	fpWriter := &kafka.Writer{
+		Addr:         kafka.TCP(*broker),
+		Topic:        "topic-false-positive",
+		Balancer:     &kafka.LeastBytes{},
+		BatchTimeout: 10 * time.Millisecond,
+	}
+
 	readers := make([]*kafka.Reader, len(topics))
 	for i, t := range topics {
 		readers[i] = newReader(*broker, t, *group)
 	}
 
 	for i, r := range readers {
-		go consume(ctx, r, topics[i], ix)
+		go consume(ctx, r, topics[i], ix, fpWriter)
 	}
 
 	log.Printf("Consuming from %v  broker=%s  group=%s  opensearch=%s  (Ctrl+C to stop)\n",
@@ -161,4 +212,5 @@ func main() {
 	for _, r := range readers {
 		r.Close()
 	}
+	fpWriter.Close()
 }

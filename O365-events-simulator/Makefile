@@ -10,7 +10,8 @@ kubeconfig:
 
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/producer ./cmd/producer/...
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/consumer/ ./cmd/consumer/...
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/consumer ./cmd/consumer/...
+	chmod +x bin/producer bin/consumer
 	docker buildx build --platform linux/amd64 \
 		-f producer.Dockerfile \
 		-t $(REGISTRY)/o365-producer:$(TAG) --load .
@@ -32,6 +33,8 @@ deploy: load
 		--set imageTag=$(TAG) \
 		--set kafka.broker=$(FEDORA_HOST):9092 \
 		--set imagePullPolicy=Never
+	KUBECONFIG=$(KUBECONFIG) kubectl rollout restart deployment/o365-events-producer deployment/o365-events-consumer
+	KUBECONFIG=$(KUBECONFIG) kubectl rollout status deployment/o365-events-producer deployment/o365-events-consumer
 
 undeploy:
 	KUBECONFIG=$(KUBECONFIG) helm uninstall o365-events

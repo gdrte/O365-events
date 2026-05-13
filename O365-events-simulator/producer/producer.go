@@ -21,21 +21,28 @@ func buildMessage(topic string) (kafka.Message, string) {
 	var eventType string
 	var payload []byte
 
-	switch rand.Intn(7) {
-	case 0:
-		eventType, payload = marshal(genAADSignin())
-	case 1:
-		eventType, payload = marshal(genActivityLog())
-	case 2:
-		eventType, payload = marshal(genSecurityAlert())
-	case 3:
-		eventType, payload = marshal(genDiagnostic())
-	case 4:
-		eventType, payload = marshal(genOutlookMail())
-	case 5:
-		eventType, payload = marshal(genOutlookCalendar())
-	default:
-		eventType, payload = marshal(genOutlookAdmin())
+	// Each of the 15 scenario types fires at ~1/10000 probability.
+	// Roll once: values 0–14 each map to one scenario; 15–9999 → background event.
+	roll := rand.Intn(10000)
+	if roll < 15 {
+		eventType, payload = pickScenario(roll)
+	} else {
+		switch rand.Intn(7) {
+		case 0:
+			eventType, payload = marshal(genAADSignin())
+		case 1:
+			eventType, payload = marshal(genActivityLog())
+		case 2:
+			eventType, payload = marshal(genSecurityAlert())
+		case 3:
+			eventType, payload = marshal(genDiagnostic())
+		case 4:
+			eventType, payload = marshal(genOutlookMail())
+		case 5:
+			eventType, payload = marshal(genOutlookCalendar())
+		default:
+			eventType, payload = marshal(genOutlookAdmin())
+		}
 	}
 
 	headers := []kafka.Header{

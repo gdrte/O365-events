@@ -1,4 +1,4 @@
-package producer
+package main
 
 import (
 	"O365_Events_Orchestrator/producer"

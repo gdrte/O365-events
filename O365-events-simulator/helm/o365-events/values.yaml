@@ -1,6 +1,6 @@
 imageRegistry: "192.168.0.103:5000"
 imageTag: "latest"
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always
 
 kafka:
   broker: "192.168.0.103:9092"

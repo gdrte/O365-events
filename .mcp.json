@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "ssh-mcp": {
+      "command": "/Users/gdr/Projects/ssh-mcp/ssh-mcp.sh"
+    }
+  }
+}
