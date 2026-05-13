@@ -14,10 +14,10 @@ producer:
   resources:
     requests:
       cpu: 100m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 500m
-      memory: 128Mi
+      memory: 200Mi
 
 consumer:
   replicaCount: 2
@@ -26,7 +26,7 @@ consumer:
   resources:
     requests:
       cpu: 100m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 500m
-      memory: 128Mi
+      memory: 200Mi

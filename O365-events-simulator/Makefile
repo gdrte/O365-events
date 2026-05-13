@@ -3,7 +3,7 @@ TAG         := latest
 FEDORA_HOST := 192.168.0.103
 KUBECONFIG  := /tmp/k3s-kubeconfig.yaml
 
-.PHONY: kubeconfig build load push deploy undeploy logs-producer logs-consumer opensearch-deploy opensearch-status
+.PHONY: kubeconfig build load push deploy undeploy logs-producer logs-consumer opensearch-deploy opensearch-status opensearch-dashboard
 
 kubeconfig:
 	ssh $(FEDORA_HOST) "sudo cat /etc/rancher/k3s/k3s.yaml" | sed 's/127.0.0.1/$(FEDORA_HOST)/g' > $(KUBECONFIG)
@@ -53,3 +53,6 @@ opensearch-deploy:
 
 opensearch-status:
 	KUBECONFIG=$(KUBECONFIG) kubectl get pods,svc -n opensearch
+
+opensearch-dashboard:
+	python3 scripts/create-dashboard.py http://$(FEDORA_HOST):30561

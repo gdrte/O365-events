@@ -130,6 +130,7 @@ func consume(ctx context.Context, reader *kafka.Reader, topic string, ix *indexe
 			log.Printf("[%s] parse error: %v | raw: %s", topic, err, msg.Value)
 			continue
 		}
+		event.EventType = eventType
 
 		fmt.Printf("[%-10s] offset=%-6d  %-30s  %-28s  %-12s  %-10s  %s\n",
 			topic,

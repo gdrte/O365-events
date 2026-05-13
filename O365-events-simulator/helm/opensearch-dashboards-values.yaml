@@ -11,6 +11,14 @@ resources:
 
 opensearchHosts: "http://opensearch-cluster-master:9200"
 
+service:
+  type: NodePort
+  nodePort: 30561
+
+extraEnvs:
+  - name: DISABLE_SECURITY_DASHBOARDS_PLUGIN
+    value: "true"
+
 config:
   opensearch_dashboards.yml: |
     opensearch.hosts: [http://opensearch-cluster-master:9200]
